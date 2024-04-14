@@ -2,5 +2,5 @@
 Projet Bayes Birat
 
 #Lamiae ARIFALLAH
-#Rim yousefi
+#Rim YOUSFI
 #Meryem Cherqui
