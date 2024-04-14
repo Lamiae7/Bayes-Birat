@@ -1,1 +1,132 @@
+\documentclass{rapportECC}
+\usepackage{lipsum}
+\title{Rapport ECL - Template} %Titre du fichier
+\usepackage{lipsum} 
+\usepackage{biblatex} %Imports biblatex package
+\addbibresource{bibtex.bib} %Import the bibliography file
+\usepackage{appendix} % Package pour gérer les annexes
+
+\begin{document}
+
+%----------- Informations du rapport ---------
+
+\titre{Projet Bayes} %Titre du fichier .pdf
+
+\sujet{\LaTeX Approfondi} %Nom du sujet
+
+\Encadrants{Mathieu \textsc{Ribatet}}
+ 
+
+\eleves{Lamiae \textsc{ARIFALLAH} \\
+Rim \textsc{YOUSFI} \\
+{Meryem Cherqi}} %Nom des élèves
+
+ 
+
+
+%----------- Initialisation -------------------
+        
+\fairemarges %Afficher les marges
+\fairepagedegarde %Créer la page de garde
+\tabledematieres %Créer la table de matières
+
+%------------ Corps du rapport ----------------
+
+
+%\section{Introduction} 
+
+% Introduction
+  
+\section{Introduction}
+
+Dans l'exemple des rats nous illustrons l'utilisation d'une distribution Normale multivariée (MVN) pour les coefficients de régression de la courbe de croissance pour chaque rat. C'est le modèle adopté par Gelfand et al. (1990) pour ces données, et il suppose a priori que les paramètres d'interception et de pente pour chaque rat sont corrélés. Par exemple, une corrélation positive impliquerait que les rats initialement lourds (interception élevée) ont tendance à prendre du poids plus rapidement (pente plus raide) que les rats plus légers. Le modèle est le suivant :
+
+\[ Y_{ij} \sim \text{Normale}(m_{ij}, \tau_c) \]
+\[ m_{ij} = b_{1i} + b_{2i} x_j \]
+\[ \mathbf{b}_i \sim \text{MVN}(\mathbf{m}_b, \mathbf{W}) \]
+
+où \( Y_{ij} \) est le poids du ième rat mesuré à l'âge \( x_j \), et \( \mathbf{b}_i \) désigne le vecteur \( (b_{1i}, b_{2i}) \). Nous supposons des priors Normaux univariés indépendants 'non-informatifs' pour les composantes séparées \( m_{b1} \) et \( m_{b2} \). Un prior Wishart \( \text{Wishart}(R, r) \) a été spécifié pour \( \mathbf{W} \), la matrice de précision de population des coefficients de régression. Pour représenter une connaissance a priori vague, nous avons choisi les degrés de liberté \( r \) de cette distribution aussi petits que possible (c'est-à-dire 2, le rang de \( \mathbf{W} \)). La matrice d'échelle a été spécifiée comme suit :
+
+\[ R = \begin{pmatrix} 200 & 0 \\ 0 & 0.2 \end{pmatrix} \]
+
+Cela représente notre estimation a priori de l'ordre de grandeur de la matrice de covariance \( \mathbf{W}^{-1} \) pour \( \mathbf{b}_i \) (voir le manuel Classic BUGS (version 0.5) section sur les modèles normaux multivariés), et est équivalent à la spécification a priori utilisée par Gelfand et al. Enfin, un prior Gamma \( \text{Gamma}(0.001, 0.001) \) non informatif a été supposé pour la précision de mesure \( \tau_c \).
+
+
+\begin{figure}[h!]
+    \centering
+    \includegraphics[scale = 0.4]{shéma.png}
+    \caption{graphe du modèle}
+    \label{fig:enter-label}
+\end{figure}
+
+
+
+
+\section{Modèle mathématique}
+
+
+
+\section{Interprétation des résultats}
+Pour estimer les variables aléatoires listées précedemment, nous avons utilisé
+pour celà l’algorithme de Gibbs. Cet algorithme est une méthode d’échantillonnage
+de Monte Carlo par chaînes de Markov (MCMC) qui permet de générer des
+échantillons à partir de la distribution a posteriori des paramètres étant donné les
+données.Afin d’assurer la convergence de l’algorithme, nous avons utilisé une phase
+de "burn-in" de 1000 échantillons. Durant cette phase, les échantillons générés par
+l’algorithme sont écartés et non utilisés pour estimer les paramètres. Cette étape
+permet de réduire l’influence des conditions initiales sur les résultats finaux.
+\\
+
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.8\linewidth]{mc.png}
+    \caption{Les chaines de Markov obtenues}
+    \label{fig:enter-label}
+\end{figure}
+
+
+
+
+
+
+
+
+
+\\La moyenne de $\mu_{\beta_1}$ est 0.6395 et sa variance est 1.0651. Cela signifie que la moyenne de l'interception des courbes de croissance des rats est d'environ 0.6395, avec une variation autour de cette moyenne d'environ 1.0651.
+\\La moyenne de $\mu_{\beta_2}$ est 0.1495 et sa variance est 0.4878. Cela signifie que la moyenne de la pente des courbes de croissance des rats est d'environ 0.1495, avec une variation autour de cette moyenne d'environ 0.4878.
+\\La moyenne de $\sigma$ est 253.0487 et sa variance est 448.4689. Cela représente la moyenne et la variance de la distribution de mesure de l'erreur, qui est utilisée dans le modèle pour prendre en compte les fluctuations ou les écarts par rapport aux valeurs prédites par le modèle.
+
+\textbf{Fonctions ACF:}
+\begin{figure}
+    \centering
+    \includegraphics[width=0.5\linewidth]{acf1.png}
+    \label{fig:enter-label}
+\end{figure}
+\begin{figure}
+    \centering
+    \includegraphics[width=0.5\linewidth]{ACF2.png}
+    \label{fig:enter-label}
+\end{figure}
+\begin{figure}
+    \centering
+    \includegraphics[width=0.5\linewidth]{ACF3.png}
+    \label{fig:enter-label}
+\end{figure}
+
+
+% Fin du document
+\end{document}
+
+
+
+
+
+
+\section{Introduction de Nouvelle Ligne de Produits dans un Marché Concurrentiel}
+
+\subsection{Repository GIT}
+\url{https://github.com/Lamiae7/Apst_ECN}
+
+\end{document}
 
