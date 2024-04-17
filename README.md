@@ -18,6 +18,7 @@ Ce projet implémente le modèle Birats, un modèle hiérarchique bivarié norma
 
 ## Fichiers dans le Répertoire
 - bayes_birats_code.ipynb: Notebook Jupyter contenant le code pour la modélisation et l'analyse.
+- projet_birats.Rmd : Une autre version améliorée qu'on a pu le réalisée contenant le code en R.
 - WinBUGS_Vol2-23-25.pdf: Document PDF fournissant les détails et les résultats originaux du modèle utilisant WinBUGS. https://mribatet.perso.math.cnrs.fr/CentraleNantes/BAYES/Grading.pdf
 - Rapport : https://www.overleaf.com/project/66198a8d696e5baf8f4cd0ad
 
