@@ -1,0 +1,183 @@
+---
+title: ''
+author: "CHERQI Meryem - ARIFALLAH Lamiae - YOUSFI Rym "
+date: "2024-04-15"
+output:
+  html_document:
+    df_print: paged
+  pdf_document: default
+editor_options: 
+  markdown: 
+    wrap: sentence
+---
+
+
+```{r}
+library(rjags)
+
+# Data 
+N <- 30
+Ti <- 5
+xb <- 22
+x <- c(8.0, 15.0, 22.0, 29.0, 36.0)
+Y <- matrix(c(151, 199, 246, 283, 320,
+                 145, 199, 249, 293, 354,
+                 147, 214, 263, 312, 328,
+                 155, 200, 237, 272, 297,
+                 135, 188, 230, 280, 323,
+                 159, 210, 252, 298, 331,
+                 141, 189, 231, 275, 305,
+                 159, 201, 248, 297, 338,
+                 177, 236, 285, 350, 376,
+                 134, 182, 220, 260, 296,
+                 160, 208, 261, 313, 352,
+                 143, 188, 220, 273, 314,
+                 154, 200, 244, 289, 325,
+                 171, 221, 270, 326, 358,
+                 163, 216, 242, 281, 312,
+                 160, 207, 248, 288, 324,
+                 142, 187, 234, 280, 316,
+                 156, 203, 243, 283, 317,
+                 157, 212, 259, 307, 336,
+                 152, 203, 246, 286, 321,
+                 154, 205, 253, 298, 334,
+                 139, 190, 225, 267, 302,
+                 146, 191, 229, 272, 302,
+                 157, 211, 250, 285, 323,
+                 132, 185, 237, 286, 331,
+                 160, 207, 257, 303, 345,
+                 169, 216, 261, 295, 333,
+                 157, 205, 248, 289, 316,
+                 137, 180, 219, 258, 291,
+                 153, 200, 244, 286, 324), nrow=N, ncol= Ti, byrow=TRUE)
+
+mean <- c(0, 0)
+var_prior <- diag(c(1e6, 1e6))
+Omega <- matrix(c(200.0, 0, 0, 0.2), nrow=2, byrow=TRUE)
+
+# Initialisation
+inits <- function() {
+list(alpha = c(250, 250, 250, 250, 250, 250, 250, 250, 250, 250, 250, 250, 250, 250, 250,
+                  250, 250, 250, 250, 250, 250, 250, 250, 250, 250, 250, 250, 250, 250, 250),
+      beta = c(6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6,
+                  6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6),         
+      alpha.c = 150, mu_beta2 = 10,
+      tau.c = 1, alpha.tau = 1, tauC = 1)}
+
+# Model
+model_string <- "
+   model
+   {
+      for( i in 1 : N ) {
+         for( j in 1 : Ti ) {
+            Y[i , j] ~ dnorm(mu[i , j],tau.c)
+            mu[i , j] <- alpha[i] + beta[i] * (x[j] - xb)
+         }
+         alpha[i] ~ dnorm(alpha.c,alpha.tau)
+         beta[i] ~ dnorm(mu_beta2,tauC)
+      }
+      tau.c ~ dgamma(0.001,0.001)
+      sigma <- 1 / sqrt(tau.c)
+      alpha.c ~ dnorm(0.0,1.0E-6)   
+      alpha.tau ~ dgamma(0.001,0.001)
+      mu_beta2 ~ dnorm(0.0,1.0E-6)
+      tauC ~ dgamma(0.001,0.001)
+      mu_beta1 <- alpha.c - xb * mu_beta2   
+   }"
+
+# Data list 
+data_jags <- list(Y = Y, N = N, Ti = Ti, x = x, xb= xb, mean = mean, var_prior = var_prior, Omega = Omega)
+
+
+# Parametres à estimer
+params <- c("mu_beta1", "mu_beta2","sigma")
+
+
+
+# MCMC parametrage
+n_iter <- 10000
+n_burn <- 2500
+n_thin <- 2
+n_chains <- 2
+
+model <- jags.model(textConnection(model_string), data = data_jags, inits = inits, n.chains = n_chains)
+update(model, n_burn)
+samples <- coda.samples(model, variable.names = params, n.iter = n_iter / n_thin)
+
+# Convergence
+library(coda)
+gelman.diag(samples)
+autocorr.diag(samples)
+effectiveSize(samples)
+
+summary(samples)
+
+print(gelman.diag(samples))
+print(autocorr.diag(samples))
+print(effectiveSize(samples))
+
+# Plotting trace plots
+traceplot(samples)
+
+
+summary(samples)
+
+```
+
+
+```{r}
+# basic plot and diagnostics ----------------------------------------------
+
+library(ggmcmc)
+
+#traceplot(model1.samples)
+res = ggs(samples)
+ggs_density(res)
+
+ggs_traceplot(res)
+
+ggs_running(res)
+
+ggs_autocorrelation(res)
+```
+```{r}
+plot(samples)
+```
+```{r}
+
+# Fonction de prédiction améliorée
+predict_rat <- function(rat.x, n = 1000) {
+  # Générer des échantillons pour alpha et beta
+  alpha.i = rnorm(n, mean(mu_beta1), sd = sd(mu_beta1))
+  beta.i = rnorm(n, mean(mu_beta2), sd = sd(mu_beta2))
+  
+  # Générer des échantillons pour les prédictions Y en utilisant les nouveaux x
+  Ypred = alpha.i + beta.i * rat.x
+  
+  # Calculer l'intervalle HPD pour les prédictions
+  inter = HPDinterval(as.mcmc(Ypred))
+  
+  # Retourner les résultats sous forme de vecteur
+  c(inter[1], inter[2])
+}
+
+# Appliquer la fonction de prédiction pour un vecteur de valeurs x
+intervaldata <- data.frame(x = 0:40)
+predictions <- t(sapply(intervaldata$x, function(x) predict_rat(x, n = 1000)))
+
+# Incorporer les prédictions dans le dataframe
+intervaldata$min <- predictions[, 1]
+intervaldata$max <- predictions[, 2]
+
+# Visualisation a
+fig <- ggplot(data = intervaldata, aes(x = x)) +
+  geom_ribbon(aes(ymin = min, ymax = max), alpha = 0.3, fill = "blue") +
+  geom_line(data = intervaldata, aes(y = (min + max) / 2), colour = "red") +
+  labs(title = "Intervalles de prédiction pour Y", x = "Valeur de x", y = "Prédiction de Y")
+
+print(fig)
+
+
+```
+```
+
